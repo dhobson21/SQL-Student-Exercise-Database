@@ -71,7 +71,7 @@ class Instructor():
         self.specialty = specialty
 
     def __repr__(self):
-        return f"{self.first_name} {self.last_name} is the instructor for {self.cohort} and can be messaged on slack at @{self.slack_handle}. {self.first_name}'s specialty is {self.specialty}'"
+        return f"{self.first_name} {self.last_name} is the instructor for {self.cohort} and can be messaged on slack at @{self.slack_handle}. {self.first_name}'s specialty is {self.specialty}"
 
 class StudentExerciseReports():
 
