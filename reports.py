@@ -258,18 +258,285 @@ class StudentExerciseReports():
         for instructor in all_instructors:
             print(instructor)
 
-print("\n Students")
+    #CHAPTER 6 MULTIPLE ROWS
+    def students_exercises(self):
+
+        exercises = dict()
+
+        with sqlite3.connect(self.db_path) as conn:
+
+            db_cursor = conn.cursor()
+
+            db_cursor.execute("""
+            select e.Id ExerciseId,
+                e.ExerciseName,
+                s.Id,
+                s.FirstName,
+                s.LastName,
+                e.ExerciseLanguage
+            from Exercise e
+            join StudentExercise se on se.ExerciseId = e.Id
+            join Student s on s.Id = se.StudentId
+            order by e.id
+            """)
+
+            dataset = db_cursor.fetchall()
+
+            for row in dataset:
+                exercise_id = row[0]
+                exercise_name = row[1]
+                student_id = row[2]
+                student_name = f'{row[3]} {row[4]}'
+
+                if exercise_name not in exercises:
+                    exercises[exercise_name] = [student_name]
+                else:
+                    exercises[exercise_name].append(student_name)
+            for exercise_name, students in exercises.items():
+                print(exercise_name)
+                for student in students:
+                    print(f'\t* {student}')
+
+#Practice: Student Workload
+
+#List the exercises assigned to each student. Display each student name and the exercises s/he has been assigned beneath their name. Use a dictionary to track each student. Remember that the key should be the student id and the value should be the entire student object.
+
+    def assigned_exercises(self):
+        students = dict()
+
+        with sqlite3.connect(self.db_path) as conn:
+
+            db_cursor = conn.cursor()
+
+            db_cursor.execute("""
+            select e.Id ExerciseId,
+                e.ExerciseName,
+                s.Id,
+                s.FirstName,
+                s.LastName,
+                e.ExerciseLanguage
+            from Exercise e
+            join StudentExercise se on se.ExerciseId = e.Id
+            join Student s on s.Id = se.StudentId
+            order by e.id
+            """)
+
+            data_set = db_cursor.fetchall()
+
+            for row in data_set:
+                exercise_id = row[0]
+                exercise_name = row[1]
+                student_id = row[2]
+                student_name = f'{row[3]} {row[4]}'
+
+                if student_name not in students:
+                    students[student_name] = [exercise_name]
+                else:
+                    students[student_name].append(exercise_name)
+            for student, exercises in students.items():
+                print(f'{student} is working on:')
+                for exercise in exercises:
+                    print(f'\t* {exercise}')
+
+#Practice: Assigned Exercises
+
+# List all exercises assigned by each instructor. Display each instructor name and the exercises s/he has assigned beneath their name. Use a dictionary to track each instructor. Remember that the key should be the instructor id and the value should be the entire instructor object.
+
+    def instructor_exercises(self):
+        instructors = dict()
+
+        with sqlite3.connect(self.db_path) as conn:
+
+            db_cursor = conn.cursor()
+
+            db_cursor.execute("""
+            select i.Id,
+                        i.FirstName,
+                        i.LastName,
+                        i.CohortId,
+                        se.ExerciseId,
+                        e.ExerciseName
+                    from Instructor i
+                    join Student s on i.CohortId = s.CohortId
+                    join StudentExercise se on s.id = se.StudentId
+                    join Exercise e on se.ExerciseId = e.id
+                    order by i.Id
+            """)
+
+            data_set = db_cursor.fetchall()
+
+            for row in data_set:
+                instructor_name = f'{row[1]} {row[2]}'
+                exercise_name = row[5]
+
+                if instructor_name not in instructors:
+                    instructors[instructor_name] = [exercise_name]
+                elif instructor_name in instructors and exercise_name not in instructors[instructor_name]:
+                    instructors[instructor_name].append(exercise_name)
+                else:
+                    pass
+
+            for instructor, exercises in instructors.items():
+                print(f'{instructor} has assigned:')
+                for exercise in exercises:
+                    print(f'\t*{exercise}')
+
+#Practice: Popular Exercises
+
+#Output a report in your terminal that lists all students and the exerices each is assigned. Use a dictionary to track each exercise. Remember that the key should be the exercise id and the value should be the entire exercise object.
+
+    def student_exercises(self):
+        exercises = dict()
+
+        with sqlite3.connect(self.db_path) as conn:
+
+            db_cursor = conn.cursor()
+
+            db_cursor.execute("""
+            select e.Id,
+                e.ExerciseName,
+                se.ExerciseId,
+           	    se.StudentId,
+                s.FirstName,
+                s.LastName
+            from Exercise e
+            join StudentExercise se on e.Id = se.ExerciseId
+            join Student s on se.StudentId = s.id
+            order by s.Id
+            """)
+
+            data_set = db_cursor.fetchall()
+
+            for row in data_set:
+                student_name = f'{row[4]} {row[5]}'
+                exercise_name = row[1]
+
+                if exercise_name not in exercises:
+                    exercises[exercise_name] = [student_name]
+                else:
+                    exercises[exercise_name].append(student_name)
+
+            for exercise, students in exercises.items():
+                print (f'{exercise} is being worked on by:')
+                for student in students:
+                    print(f'\t*{student}')
+
+
+
+#Advanced Challenge: Who is Working on What and Why?
+
+#List the students working on each exercise. Also include the instructor who assigned the exercise. Use a dictionary to track each exercise.
+
+    def assigned_by(self):
+        exercises = dict()
+
+        with sqlite3.connect(self.db_path) as conn:
+
+            db_cursor = conn.cursor()
+
+
+            db_cursor.execute("""
+            select e.Id,
+                e.ExerciseName,
+                se.ExerciseId,
+           	    se.StudentId,
+                s.FirstName,
+                s.LastName,
+                i.FirstName,
+                i.LastName
+            from Exercise e
+            join StudentExercise se on e.Id = se.ExerciseId
+            join Student s on se.StudentId = s.id
+            join Instructor i on s.CohortId = i.CohortId
+            order by s.Id
+            """)
+
+            data_set = db_cursor.fetchall()
+
+            for row in data_set:
+                student_name = f'{row[4]} {row[5]}'
+                exercise_name = row[1]
+                instructor_name = f'{row[6]} {row[7]}'
+
+                if exercise_name not in exercises:
+                    exercises[exercise_name] = [{student_name: instructor_name}]
+                else:
+                    exercises[exercise_name].append({student_name: instructor_name})
+
+            for exercise, students in exercises.items():
+                print (f'{exercise}:')
+                for student in students:
+                    for k, v in student.items():
+                        print(f'\t*{v} assigned this to {k}')
+
+    def instructors_and_students(self):
+        cohorts = dict()
+
+
+        with sqlite3.connect(self.db_path) as conn:
+
+            db_cursor = conn.cursor()
+
+            db_cursor.execute("""
+            select c.Id,
+                c.Name ,
+                s.FirstName,
+           	    s.LastName,
+                i.FirstName,
+                i.LastName
+            from Cohort c
+            join Student s on c.Id = s.CohortId
+            join Instructor i on s.CohortId = i.CohortId
+            order by c.Id
+            """)
+
+            data_set = db_cursor.fetchall()
+
+            for row in data_set:
+                instructor_id = row[0]
+                cohort_name = row[1]
+                student_name = f'{row[2]} {row[3]}'
+                instructor_name = f'{row[4]} {row[5]}'
+
+                if cohort_name not in cohorts:
+                    cohorts[cohort_name] = {'Students' : set(), 'Instructor' : set()}
+                    cohorts[cohort_name]['Students'].add(student_name)
+                    cohorts[cohort_name]['Instructor'].add(instructor_name)
+
+                else:
+                    cohorts[cohort_name]['Students'].add(student_name)
+                    cohorts[cohort_name]['Instructor'].add(instructor_name)
+
+            for cohort, people in cohorts.items():
+                    print(f'{cohort}:'  )
+                    for type, persons in people.items():
+                        print(f'  {type}')
+                        for person in persons:
+                            if type == "Students":
+                                print(f'  * {person} is a student in {cohort}.')
+                            else:
+                                print(f'  * {person} is an instructor for {cohort}.')
+
+
+
+
+# print("\n Students")
 reports = StudentExerciseReports()
-reports.all_students()
-print("\n Cohorts")
-reports.all_cohorts()
-print("\n Exercises")
-reports.all_exercises()
-print("\n JavaScript Exercises")
-reports.JS_exercises()
-print("\n Pyhton Exercises")
-reports.python_exercises()
-print("\n C# Exercises")
-reports.csharp_exercises()
-print("\n Instructors")
-reports.all_instructors()
+# reports.all_students()
+# print("\n Cohorts")
+# reports.all_cohorts()
+# print("\n Exercises")
+# reports.all_exercises()
+# print("\n JavaScript Exercises")
+# reports.JS_exercises()
+# print("\n Pyhton Exercises")
+# reports.python_exercises()
+# print("\n C# Exercises")
+# reports.csharp_exercises()
+# print("\n Instructors")
+# reports.all_instructors()
+#print("\n Student's Exercises")
+# reports.students_exercises()
+#reports.student_exercises()
+# reports.assigned_by()
+reports.instructors_and_students()
